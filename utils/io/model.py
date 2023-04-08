@@ -19,7 +19,10 @@ def save_model(model: Module, path: Path):
 
 
 def load_model(
-    model_class: Type[T], state_dict_path: Path = None, eval_mode: bool = True
+    model_class: Type[T],
+    state_dict_path: Path = None,
+    eval_mode: bool = True,
+    **kwargs: dict
 ) -> T:
     """
     Load a PyTorch model from a file.
@@ -36,7 +39,7 @@ def load_model(
     Returns:
         T: The loaded model instance.
     """
-    model: Module = model_class()
+    model: Module = model_class(**kwargs)
     state_dict = load(state_dict_path)
     model.load_state_dict(state_dict)
     if eval_mode:
