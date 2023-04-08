@@ -1,2 +1,32 @@
+# Compiled Python files
+*.pyc
+__pycache__/
+*.pt
+*.pth
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Virtual environments
 .venv/
+venv/
+env/
+*.env
+
+# IDE files and directories
+.idea/
 .vscode/
+*.pydevproject
+*.pyt
+*.pyc
+*.bak
+*.swp
+*.orig
+*~ 
+*.cache
+*.log
+*.out
+*.egg-info
+*.egg
