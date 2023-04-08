@@ -26,6 +26,8 @@ class MLP(nn.Module):
 
         activation_name (str): The name of the activation function to use in the hidden
                                layers of the neural network (e.g. 'ReLU', 'Tanh').
+        output_activation_name (str): The name of the activation function to use in the hidden
+                                      layers of the neural network (e.g. 'ReLU', 'Tanh').
     """
 
     def __init__(
@@ -34,13 +36,19 @@ class MLP(nn.Module):
         output_shape: int,
         num_layers: int,
         activation_name: str,
+        output_activation_name: str,
     ):
         super(MLP, self).__init__()
         layers = []
         activation = getattr(nn, activation_name)
+        output_activation = None
+        if output_activation_name != "":
+            output_activation = getattr(nn, output_activation_name)
         for _ in range(num_layers):
             layers += [nn.Linear(input_shape, input_shape), activation()]
         layers += [nn.Linear(input_shape, output_shape)]
+        if output_activation is not None:
+            layers += [output_activation()]
         self.stack = nn.Sequential(*layers)
 
     def forward(self, state):
