@@ -35,7 +35,7 @@ class MLP(nn.Module):
         num_layers: int,
         activation_name: str,
     ):
-        super.__init__()
+        super(MLP, self).__init__()
         layers = []
         activation = getattr(nn, activation_name)
         for _ in range(num_layers):
