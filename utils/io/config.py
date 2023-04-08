@@ -1,7 +1,8 @@
 from typing import TypeVar, Type
 from pathlib import Path
 from yaml import load, FullLoader
-T = TypeVar('T')
+
+T = TypeVar("T")
 
 
 def load_config(config_class: Type[T], path: Path) -> T:
@@ -16,7 +17,7 @@ def load_config(config_class: Type[T], path: Path) -> T:
     Returns:
         An instance of the specified configuration class.
     """
-    with open(path, 'r') as f:
+    with open(path, "r") as f:
         yaml_data = load(f, Loader=FullLoader)
     data = config_class(**yaml_data)
     return data

@@ -2,7 +2,8 @@ from typing import TypeVar, Type
 from torch import save, load
 from torch.nn import Module
 from pathlib import Path
-T = TypeVar('T')
+
+T = TypeVar("T")
 
 
 def save_model(model: Module, path: Path):
@@ -18,22 +19,22 @@ def save_model(model: Module, path: Path):
 
 
 def load_model(
-    model_class: Type[T],
-    state_dict_path: Path = None,
-    eval_mode: bool = True
+    model_class: Type[T], state_dict_path: Path = None, eval_mode: bool = True
 ) -> T:
     """
     Load a PyTorch model from a file.
 
     Args:
         model_class (type): The class of the model to create.
+
         state_dict_path (pathlib.Path): The file path to the saved model state
                                         dictionary.
+
         eval_mode (bool): Whether to set the model to evaluation mode.
                           Defaults to True.
 
     Returns:
-        The loaded model instance.
+        T: The loaded model instance.
     """
     model: Module = model_class()
     state_dict = load(state_dict_path)
