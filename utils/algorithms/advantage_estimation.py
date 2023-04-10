@@ -1,40 +1,39 @@
+from typing import Tuple
 from torch import Tensor, zeros_like
 
 
 def generalized_advantage_estimation(
-    rewards: Tensor, values: Tensor, next_values: Tensor, gamma=0.99, tau=0.95
-) -> Tensor:
+    rewards: Tensor, values: Tensor, gamma: float, lam: float
+) -> Tuple[Tensor, Tensor]:
     """
         Compute the generalized advantage estimation (GAE) for a batch of
         experiences.
 
     Args:
-        rewards (Tensor): Tensor of shape [batch_size, sequence_length]
-                          containing the rewards for each step in each episode.
+        rewards (Tensor): Tensor of shape [sequence_length]
+                          containing the rewards for each step.
 
-        values (Tensor): Tensor of shape [batch_size, sequence_length]
-                         containing the estimated values for each step in each
-                         episode.
+        values (Tensor): Tensor of shape [sequence_length]
+                         containing the estimated values for each step.
 
-        next_values (Tensor): Tensor of shape [batch_size, sequence_length]
-                              containing the estimated values of the next
-                              states for each step in each episode.
+        gamma (float): Discount factor for future rewards.
 
-        gamma (float, optional): Discount factor for future rewards. Defaults
-                                 to 0.99.
-
-        tau (float, optional): Parameter controlling the trade-off between
-                               bias and variance in GAE. Defaults to 0.95.
+        lam (float): GAE lambda parameter for weighting the importance of
+                     future advantages.
 
     Returns:
-        Tensor: Tensor of shape [batch_size, sequence_length] containing the
-                computed advantages for each step in each episode.
+        (Tensor, Tensor): Tensor of shape [sequence_length] containing the
+                          computed advantages, and return.
     """
-    td_errors = rewards + gamma * next_values - values
-    gae = 0
-    advantages = zeros_like(td_errors)
-    last_idx = td_errors.shape[-1] - 1
-    for idx in range(last_idx, -1, -1):
-        gae = td_errors[idx] + gamma * tau * gae
-        advantages[idx] = gae
-    return advantages
+    returns = zeros_like(rewards)
+    advantages = zeros_like(rewards)
+    next_return = 0
+    next_value = 0
+    for idx in range(returns.shape[-1] - 1, -1, -1):
+        reward = rewards[idx]
+        value = values[idx]
+        delta = reward + (gamma * next_value) - value
+        advantages[idx] = delta + gamma * lam * next_value
+        next_return = reward + gamma * next_return
+        returns[idx] = next_return
+    return advantages, returns
