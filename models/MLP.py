@@ -1,4 +1,5 @@
 from torch import nn
+from typing import Union
 
 
 class MLP(nn.Module):
@@ -28,6 +29,8 @@ class MLP(nn.Module):
                                layers of the neural network (e.g. 'ReLU', 'Tanh').
         output_activation_name (str): The name of the activation function to use in the hidden
                                       layers of the neural network (e.g. 'ReLU', 'Tanh').
+        output_activation_args (Union[dict, None], optional): Arguments to pass into the output
+                                                               activation function. Defaults to None.
     """
 
     def __init__(
@@ -37,6 +40,7 @@ class MLP(nn.Module):
         num_layers: int,
         activation_name: str,
         output_activation_name: str,
+        output_activation_args: Union[dict, None] = None,
     ):
         super(MLP, self).__init__()
         layers = []
@@ -48,7 +52,9 @@ class MLP(nn.Module):
             layers += [nn.Linear(input_shape, input_shape), activation()]
         layers += [nn.Linear(input_shape, output_shape)]
         if output_activation is not None:
-            layers += [output_activation()]
+            if output_activation_args is None:
+                output_activation_args = {}
+            layers += [output_activation(**output_activation_args)]
         self.stack = nn.Sequential(*layers)
 
     def forward(self, state):
