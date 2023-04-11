@@ -1,4 +1,4 @@
-from torch import Tensor, exp, sub, clamp, mul, min, mean
+from torch import Tensor, exp, clamp, mul, min, mean
 
 
 def clipped_surrogate_objective(
@@ -27,7 +27,7 @@ def clipped_surrogate_objective(
                 objective.
     """
     # Calculate the probability ratios
-    ratios = exp(sub(log_current_probs, log_old_probs))
+    ratios = exp(log_current_probs - log_old_probs)
 
     # Calculate the clipped ratios using torch.clamp
     clipped_ratios = clamp(ratios, 1 - epsilon, 1 + epsilon)

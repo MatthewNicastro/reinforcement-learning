@@ -23,18 +23,14 @@ def generalized_advantage_estimation_per_trajectory(
     """
     # Step 1: Calculate the TD residuals (delta) for each time step in the trajectory
     trajectory_length = rewards.shape[-1]
-    deltas = zeros((trajectory_length,))
-    for step in range(trajectory_length - 1):
-        deltas[step] = rewards[step] + gamma * values[step + 1] - values[step]
-    deltas[trajectory_length - 1] = (
-        rewards[trajectory_length - 1] - values[trajectory_length - 1]
-    )
-
     # Step 2: Compute the GAE advantages by weighting the importance of future advantages using the λ (lambda) parameter
     advantages = zeros((trajectory_length,))
     gae = 0
     for t in reversed(range(trajectory_length)):
-        gae = deltas[t] + gamma * lam * gae
+        old_value_state = values[t]
+        next_value_state = 0 if t + 1 >= trajectory_length else values[t + 1]
+        delta = rewards[t] + gamma * next_value_state - old_value_state
+        gae = delta + gamma * lam * gae
         advantages[t] = gae
 
     # Step 3: Calculate the return for each time step
