@@ -65,6 +65,7 @@ def ppo_args():
     value_loss = dummy_value_loss
     reward_func = dummy_reward_func
     epochs = 1
+    num_trajectories = 1
     num_steps = 10
     updates_per_epoch = 1
 
@@ -76,6 +77,7 @@ def ppo_args():
         value_loss,
         reward_func,
         epochs,
+        num_trajectories,
         num_steps,
         updates_per_epoch,
     )

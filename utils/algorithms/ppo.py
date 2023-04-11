@@ -15,6 +15,7 @@ def proximal_policy_optimization(
     value_loss: Callable,
     reward_func: Callable,
     epochs: int,
+    num_trajectories: int,
     num_steps: int,
     updates_per_epoch: int,
     discount_factor: float = 0.99,
@@ -32,7 +33,8 @@ def proximal_policy_optimization(
         value_loss (Callable): Function to compute value loss.
         reward_func (Callable): Function to compute rewards.
         epochs (int): Number of training epochs.
-        num_steps (int): Number of steps per epoch.
+        num_trajectories (int): Number of trajectories to compute.
+        num_steps (int): Max number of steps per epoch.
         updates_per_epoch (int): Number of optimization steps per epoch.
         discount_factor (float): Discount factor for future rewards. Defaults to 0.99.
         gae_lambda (float): GAE lambda parameter. Defaults to 0.95.
@@ -62,13 +64,11 @@ def proximal_policy_optimization(
             policy_wrapper,
             value_wrapper,
             reward_func,
+            num_trajectories,
             num_steps,
         )
         logger["num_steps"] += num_steps_per_trajectory
 
-        num_trajectories = len(states)
-        if num_trajectories == 0:
-            raise "No trajectories"
         advantages, returns = generalized_advantage_estimation(
             num_trajectories, rewards, values, discount_factor, gae_lambda
         )
@@ -79,8 +79,9 @@ def proximal_policy_optimization(
             for trajectory_num in range(num_trajectories):
                 trajectory_states_t = states[trajectory_num]
                 trajectory_actions = actions[trajectory_num]
-                trajectory_log_probs = log_probs[trajectory_num]
+                trajectory_log_probs = log_probs[trajectory_num].detach()
                 trajectory_advantages = advantages[trajectory_num]
+
                 trajectory_advantages = (
                     trajectory_advantages - trajectory_advantages.mean()
                 ) / (trajectory_advantages.std() + 1e-8)
@@ -90,9 +91,10 @@ def proximal_policy_optimization(
                 _, trajectory_new_log_probs = policy_wrapper.output_parser(
                     trajectory_new_action_log_probs, index=trajectory_actions
                 )
+
                 policy_func_loss -= clipped_surrogate_objective(
                     log_current_probs=trajectory_new_log_probs,
-                    log_old_probs=trajectory_log_probs.detach(),
+                    log_old_probs=trajectory_log_probs,
                     advantages=trajectory_advantages,
                     epsilon=clipping_parameter,
                 )
@@ -108,10 +110,7 @@ def proximal_policy_optimization(
 
             policy_func_loss /= num_trajectories
             value_func_loss /= num_trajectories
-            policy_wrapper.update(
-                loss=policy_func_loss,
-                retain_graph=(i != updates_per_epoch - 1),
-            )
+            policy_wrapper.update(loss=policy_func_loss)
             logger["policy_losses"].append(policy_func_loss.item())
 
             value_wrapper.update(loss=value_func_loss)
