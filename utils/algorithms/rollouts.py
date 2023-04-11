@@ -10,6 +10,7 @@ def compute_trajectories(
     policy_wrapper: ModelWrapper,
     value_wrapper: ModelWrapper,
     reward_func: Callable,
+    num_trajectories: int,
     num_steps: int,
 ) -> Tuple[list, list, list, list, list, list]:
     """
@@ -21,7 +22,8 @@ def compute_trajectories(
         policy_wrapper (ModelWrapper): Wrapper for the policy network.
         value_wrapper (ModelWrapper): Wrapper for the value network.
         reward_func (Callable): Function to compute rewards.
-        num_steps (int): Number of steps to compute.
+        num_trajectories (int): Number of trajectories to compute.
+        num_steps (int): Max number of steps to compute.
 
     Returns:
         tuple: Tuple containing:
@@ -38,56 +40,36 @@ def compute_trajectories(
     rewards = []
     values = []
     num_steps_per_trajectory = []
-    step_count = 0
-    state = env.reset()[0]
-    done = False
-    (
-        curr_rewards,
-        curr_states,
-        curr_actions,
-        curr_probs,
-        curr_values,
-    ) = _init_trajectory()
-    # Compute trajectories
-    for _ in range(num_steps):
-        state_t = state_parser(state)
-        action_log_prob = policy_wrapper.network(state=state_t)
-        action, log_prob = policy_wrapper.output_parser(action_log_prob)
-        action, log_prob = action.item(), log_prob.item()
-        new_state, reward, done, truncated, info = env.step(action)
-        value_output = value_wrapper.network(state=state_t)
-        value = value_wrapper.output_parser(value_output)
-        value = value.item()
-        curr_rewards.append(reward_func(curr_rewards, reward))
-        curr_states.append(state_t)
-        curr_actions.append(action)
-        curr_probs.append(log_prob)
-        curr_values.append(value)
+    for _ in range(num_trajectories):
+        state = env.reset()[0]
+        done = False
+        (
+            curr_rewards,
+            curr_states,
+            curr_actions,
+            curr_probs,
+            curr_values,
+        ) = _init_trajectory()
+        # Compute trajectories
+        for _ in range(num_steps):
+            state_t = state_parser(state)
+            action_log_prob = policy_wrapper.network(state=state_t)
+            action, log_prob = policy_wrapper.output_parser(action_log_prob)
+            action, log_prob = action.item(), log_prob.item()
+            new_state, reward, done, truncated, info = env.step(action)
+            value_output = value_wrapper.network(state=state_t)
+            value = value_wrapper.output_parser(value_output)
+            value = value.item()
+            curr_rewards.append(reward_func(curr_rewards, reward))
+            curr_states.append(state_t)
+            curr_actions.append(action)
+            curr_probs.append(log_prob)
+            curr_values.append(value)
+            state = new_state
 
-        state = new_state
-        if done:
-            if step_count > 0:
-                num_steps_per_trajectory.append(step_count)
-                states.append(stack(curr_states))
-                actions.append(tensor(curr_actions))
-                log_probs.append(tensor(curr_probs))
-                rewards.append(tensor(curr_rewards))
-                values.append(tensor(curr_values))
-            state = env.reset()[0]
-            step_count = 0
-            done = False
-            (
-                curr_rewards,
-                curr_states,
-                curr_actions,
-                curr_probs,
-                curr_values,
-            ) = _init_trajectory()
-        else:
-            step_count += 1
-
-    if step_count > 1:
-        num_steps_per_trajectory.append(step_count)
+            if done:
+                break
+        num_steps_per_trajectory.append(len(curr_states))
         states.append(stack(curr_states))
         actions.append(tensor(curr_actions))
         log_probs.append(tensor(curr_probs))
