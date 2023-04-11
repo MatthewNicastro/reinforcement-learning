@@ -1,5 +1,5 @@
 from torch import nn
-from typing import Union
+from typing import Tuple, List
 
 
 class MLP(nn.Module):
@@ -35,26 +35,17 @@ class MLP(nn.Module):
 
     def __init__(
         self,
-        input_shape: int,
-        output_shape: int,
-        num_layers: int,
-        activation_name: str,
-        output_activation_name: str,
-        output_activation_args: Union[dict, None] = None,
+        architecture: List[Tuple[int, int, str, dict]],
     ):
         super(MLP, self).__init__()
         layers = []
-        activation = getattr(nn, activation_name)
-        output_activation = None
-        if output_activation_name != "":
-            output_activation = getattr(nn, output_activation_name)
-        for _ in range(num_layers):
-            layers += [nn.Linear(input_shape, input_shape), activation()]
-        layers += [nn.Linear(input_shape, output_shape)]
-        if output_activation is not None:
-            if output_activation_args is None:
-                output_activation_args = {}
-            layers += [output_activation(**output_activation_args)]
+        input_shape, activation_name, activation_params = architecture[0]
+        for output_shape, activation_name, activation_params in architecture[1:]:
+            layers += [nn.Linear(input_shape, output_shape)]
+            if activation_name:
+                activation = getattr(nn, activation_name)
+                layers += [activation(**activation_params)]
+            input_shape = output_shape
         self.stack = nn.Sequential(*layers)
 
     def forward(self, state):
