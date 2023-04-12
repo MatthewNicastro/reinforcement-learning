@@ -1,48 +1,49 @@
 import pytest
 from unittest.mock import patch
+from torch.nn import Module
 from pathlib import Path
+from wrappers.base import ModelWrapper, ConfigWrapper
 from utils.io.model import save_model, load_model
-import torch.nn as nn
 
 
-class MockModel(nn.Module):
-    def __init__(self, input: int):
-        super(MockModel, self).__init__()
-        self.input = input
-        self.layer = nn.Sequential(nn.Linear(input, 1), nn.ReLU())
+class MockModel(Module):
+    def __init__(self, **kwargs):
+        super().__init__()
+        self.eval_count = 0
 
-
-@pytest.fixture
-def mock_input():
-    return 5
+    def eval(self):
+        self.eval_count += 1
 
 
 @pytest.fixture
-def mock_model(mock_input):
-    return MockModel(input=mock_input)
-
-
-@pytest.fixture
-def mock_path():
-    return Path("/save")
+def model_instance():
+    return MockModel()
 
 
 @patch("utils.io.model.save")
-def test_save_model(mocked_save, mock_model, mock_path):
-    save_model(mock_model, mock_path)
-    mocked_save.assert_called()
+def test_save_model(mock_save, model_instance):
+    test_path = Path("test_model.pth")
+    save_model(model_instance, test_path)
+    mock_save.assert_called_once_with(model_instance.state_dict(), str(test_path))
 
 
-@pytest.mark.parametrize("eval_mode", [True, False])
+@pytest.mark.parametrize("eval, eval_num_calls", [(False, 0), (True, 1)])
 @patch("utils.io.model.load")
-def test_load(mocked_load, eval_mode, mock_model, mock_path, mock_input):
-    expected_state_dict = mock_model.state_dict()
-    mocked_load.return_value = expected_state_dict
-    model = load_model(MockModel, mock_path, eval_mode=eval_mode, input=mock_input)
-    state_dict = model.state_dict()
-    mocked_load.assert_called()
-    assert len(expected_state_dict) == len(state_dict)
-    for param in state_dict:
-        assert param in expected_state_dict
-        assert state_dict[param].size() == expected_state_dict[param].size()
-    assert model.training == (not eval_mode)
+@patch("utils.io.model.load_config")
+def test_load_model(mock_load_config, mock_load, eval, eval_num_calls, model_instance):
+    test_state_dict_path = Path("test_model.pth")
+    test_config_path = Path("test_config.yml")
+    mock_config = {"network_config": {"dummy_arg": 1}, "output_parser": lambda x: x}
+
+    mock_load_config.return_value = ConfigWrapper(**mock_config)
+    mock_load.return_value = model_instance.state_dict()
+
+    loaded_model_wrapper = load_model(
+        MockModel, test_state_dict_path, test_config_path, eval_mode=eval
+    )
+
+    assert isinstance(loaded_model_wrapper, ModelWrapper)
+
+    mock_load.assert_called_once_with(test_state_dict_path)
+    mock_load_config.assert_called_once_with(test_config_path)
+    model_instance.eval_count = eval_num_calls
