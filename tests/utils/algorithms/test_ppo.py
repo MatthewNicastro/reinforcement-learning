@@ -12,7 +12,7 @@ class DummyEnv:
         return [1.0], 0, False, False, {}
 
 
-class DummyPolicyModelWrapper:
+class DummyPolicyModelTrainingWrapper:
     def __init__(self, output):
         self.output = output
 
@@ -30,7 +30,7 @@ class DummyPolicyModelWrapper:
         pass
 
 
-class DummyValueModelWrapper:
+class DummyValueModelTrainingWrapper:
     def __init__(self, output):
         self.output = output
 
@@ -60,8 +60,8 @@ def dummy_reward_func(curr_rewards, reward):
 def ppo_args():
     env = DummyEnv()
     state_parser = dummy_state_parser
-    policy_wrapper = DummyPolicyModelWrapper(torch.tensor([0.0]))
-    value_wrapper = DummyValueModelWrapper(torch.tensor([0.0]))
+    policy_wrapper = DummyPolicyModelTrainingWrapper(torch.tensor([0.0]))
+    value_wrapper = DummyValueModelTrainingWrapper(torch.tensor([0.0]))
     value_loss = dummy_value_loss
     reward_func = dummy_reward_func
     epochs = 1

@@ -1,7 +1,7 @@
 from tqdm import tqdm
 from gymnasium import Env
 from typing import Callable
-from utils.algorithms.wrappers import ModelWrapper
+from wrappers.training import ModelTrainingWrapper
 from utils.algorithms.rollouts import compute_trajectories
 from utils.algorithms.policy_loss import clipped_surrogate_objective
 from utils.algorithms.advantage_estimation import generalized_advantage_estimation
@@ -10,8 +10,8 @@ from utils.algorithms.advantage_estimation import generalized_advantage_estimati
 def proximal_policy_optimization(
     env: Env,
     state_parser: Callable,
-    policy_wrapper: ModelWrapper,
-    value_wrapper: ModelWrapper,
+    policy_wrapper: ModelTrainingWrapper,
+    value_wrapper: ModelTrainingWrapper,
     value_loss: Callable,
     reward_func: Callable,
     epochs: int,
@@ -28,8 +28,8 @@ def proximal_policy_optimization(
     Args:
         env (Env): Gym environment.
         state_parser (Callable): Function to preprocess state inputs.
-        policy_wrapper (ModelWrapper): Wrapper for the policy network.
-        value_wrapper (ModelWrapper): Wrapper for the value network.
+        policy_wrapper (ModelTrainingWrapper): Wrapper for the policy network.
+        value_wrapper (ModelTrainingWrapper): Wrapper for the value network.
         value_loss (Callable): Function to compute value loss.
         reward_func (Callable): Function to compute rewards.
         epochs (int): Number of training epochs.

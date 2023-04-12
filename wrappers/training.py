@@ -2,13 +2,13 @@ from torch import nn, optim
 from typing import Callable
 
 
-class ModelWrapper:
+class ModelTrainingWrapper:
     def __init__(
         self,
         network: nn.Module,
         optimizer_name: str,
         optimizer_params: dict,
-        output_parser: Callable,
+        output_parser: Callable,  # (outputs, index=None) -> Tuple
     ):
         self.network = network
         optimizer = getattr(optim, optimizer_name)

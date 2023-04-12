@@ -1,14 +1,14 @@
 import unittest.mock as mock
 import torch
 from gymnasium import Env
-from utils.algorithms.wrappers import ModelWrapper
+from wrappers.training import ModelTrainingWrapper
 from utils.algorithms.rollouts import compute_trajectories
 
 
 def test_compute_trajectories_zero_steps():
     env_mock = mock.MagicMock(spec=Env)
-    policy_wrapper_mock = mock.MagicMock(spec=ModelWrapper)
-    value_wrapper_mock = mock.MagicMock(spec=ModelWrapper)
+    policy_wrapper_mock = mock.MagicMock(spec=ModelTrainingWrapper)
+    value_wrapper_mock = mock.MagicMock(spec=ModelTrainingWrapper)
     reward_func_mock = mock.MagicMock()
 
     (

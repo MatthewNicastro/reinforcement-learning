@@ -1,14 +1,14 @@
 from gymnasium import Env
 from torch import stack, tensor
-from utils.algorithms.wrappers import ModelWrapper
+from wrappers.training import ModelTrainingWrapper
 from typing import Tuple, Callable
 
 
 def compute_trajectories(
     env: Env,
     state_parser: Callable,
-    policy_wrapper: ModelWrapper,
-    value_wrapper: ModelWrapper,
+    policy_wrapper: ModelTrainingWrapper,
+    value_wrapper: ModelTrainingWrapper,
     reward_func: Callable,
     num_trajectories: int,
     num_steps: int,
@@ -19,8 +19,8 @@ def compute_trajectories(
     Args:
         env (Env): Gym environment.
         state_parser (Callable): Function to preprocess state inputs.
-        policy_wrapper (ModelWrapper): Wrapper for the policy network.
-        value_wrapper (ModelWrapper): Wrapper for the value network.
+        policy_wrapper (ModelTrainingWrapper): Wrapper for the policy network.
+        value_wrapper (ModelTrainingWrapper): Wrapper for the value network.
         reward_func (Callable): Function to compute rewards.
         num_trajectories (int): Number of trajectories to compute.
         num_steps (int): Max number of steps to compute.
