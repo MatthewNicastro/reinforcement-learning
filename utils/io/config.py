@@ -1,23 +1,31 @@
-from typing import TypeVar, Type
 from pathlib import Path
-from yaml import load, FullLoader
+from dill import load, dump
+from wrappers.base import ConfigWrapper
 
-T = TypeVar("T")
 
-
-def load_config(config_class: Type[T], path: Path) -> T:
+def dump_config(config: dict, path: Path):
     """
-    Load a configuration file in YAML format and create an instance of a
-    specified class.
+    Serialize a Python dictionary into a binary file using pickle.
 
     Args:
-        config_class (type): The class of the configuration object to create.
-        path (pathlib.Path): The path to the YAML configuration file.
+        config (dict): The Python dictionary to serialize.
+        path (Path): The path to the output binary file.
+    """
+    with open(path, "wb") as f:
+        dump(config, f)
+
+
+def load_config(path: Path) -> ConfigWrapper:
+    """
+    Deserialize a Python dictionary from a binary file using pickle.
+
+    Args:
+        path (Path): The path to the input binary file.
 
     Returns:
-        An instance of the specified configuration class.
+        config (dict): The deserialized Python dictionary.
     """
-    with open(path, "r") as f:
-        yaml_data = load(f, Loader=FullLoader)
-    data = config_class(**yaml_data)
-    return data
+
+    with open(path, "rb") as f:
+        config = load(f)
+    return ConfigWrapper(**config)
