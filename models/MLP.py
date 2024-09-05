@@ -3,10 +3,15 @@ from typing import Tuple, List
 
 
 class MLP(nn.Module):
-    def __init__(
-        self,
-        architecture: List[Tuple[int, int, str, dict]],
-    ):
+    '''A simple Multi-Layer Perceptron (MLP) model.
+
+    Attributes:
+        stack (nn.Sequential): A stack of layers that make up the MLP model.
+    '''
+    stack: nn.Sequential
+
+    def __init__(self, architecture: List[Tuple[int, str, dict]]):
+        assert len(architecture) > 1, 'Architecture must have at least 2 layers.'
         super(MLP, self).__init__()
         layers = []
         input_shape, activation_name, activation_params = architecture[0]

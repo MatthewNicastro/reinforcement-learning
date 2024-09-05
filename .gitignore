@@ -29,3 +29,5 @@ env/
 *.out
 *.egg-info
 *.egg
+.DS_Store
+.mpypy_cache/

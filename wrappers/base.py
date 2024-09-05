@@ -12,18 +12,10 @@ class ModelWrapper:
         output_parser (Callable): Function to parse model output.
     """
 
-    def __init__(
-        self,
-        network: nn.Module,
-        output_parser: Callable,
-    ):
-        """
-        Initializes a ModelWrapper instance.
+    network: nn.Module
+    output_parser: Callable
 
-        Args:
-            network (nn.Module): PyTorch model.
-            output_parser (Callable): Function to parse model output, (outputs, index=None) -> (action, probs)
-        """
+    def __init__(self, network: nn.Module, output_parser: Callable):
         self.network = network
         self.output_parser = output_parser
 
